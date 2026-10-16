@@ -2,8 +2,8 @@ apiVersion: v2
 name: ingress-nginx
 description: Helm wrapper chart overriding official ingress-nginx
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.1.1
+appVersion: "0.1.1"
 dependencies:
   - name: ingress-nginx
     version: "4.15.1"
