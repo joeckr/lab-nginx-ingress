@@ -1,43 +1,50 @@
-app:
-  name: lab-service
-  image: nginxinc/nginx-unprivileged
-  tag: alpine
-  pullPolicy: Always
-  replicaCount: 1
-  port: 8080
-  env: "lab"
-  resources:
-    limits:
-      cpu: 250m
-      memory: 256Mi
-  securityContext:
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
-    capabilities:
-      drop:
-        - ALL
-  podSecurityContext:
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
-    fsGroup: 1031
-  tolerations:
-    - key: "node-role.kubernetes.io/control-plane"
-      operator: "Exists"
-      effect: "NoSchedule"
-    - key: "node-role.kubernetes.io/master"
-      operator: "Exists"
-      effect: "NoSchedule"
+ingress-nginx:
+  controller:
+    kind: DaemonSet
+    hostNetwork: false
+    dnsPolicy: ClusterFirst
 
-service:
-  name: lab-service
-  type: ClusterIP
-  port: 8080
+    podSecurityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+      fsGroup: 82
 
-ingress:
-  enabled: true
-  name: lab-ingress
-  host: "test.joeckr.dev" # add your own domain
-  className: "nginx"
-  path: /
-  pathType: "Prefix"
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      runAsNonRoot: true
+      runAsUser: 101
+      runAsGroup: 82
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - NET_BIND_SERVICE
+
+    service:
+      enabled: true
+      type: LoadBalancer
+
+    admissionWebhooks:
+      enabled: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 90Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+    tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+    config:
+      use-forwarded-headers: "true"
+      client-max-body-size: "50m"
+      ssl-redirect: "false"
